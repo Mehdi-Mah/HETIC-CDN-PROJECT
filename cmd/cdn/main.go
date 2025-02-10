@@ -6,6 +6,7 @@ import (
 	"time"
 	"HETIC-CDN-PROJECT/pkg/proxy"
 	"HETIC-CDN-PROJECT/pkg/security"
+	"HETIC-CDN-PROJECT/pkg/middleware"
 )
 
 func main() {
@@ -13,6 +14,7 @@ func main() {
 	Crée un multiplexer qui va gérer les différentes routes de l’application.
 	 C’est ici on associe les URL à des fonctions spécifiques.*/
 	mux := http.NewServeMux()
+	muxWithMiddleware := middleware.LoggingMiddleware(mux)
 
 	/* Route du proxy pour rediriger les requêtes, vers les serveurs d’origine.
       Le package proxy va choisir le serveur via le load balancer*/
@@ -26,7 +28,7 @@ func main() {
 	// Configuration du serveur avec timeouts
 	server := &http.Server{
 		Addr:         ":8080",
-		Handler:      mux, // Ajout du multiplexer au serveur
+		Handler:      muxWithMiddleware, // Utilisation du multiplexer avec middleware
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}

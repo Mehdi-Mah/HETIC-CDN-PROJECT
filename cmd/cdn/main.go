@@ -1,21 +1,50 @@
 package main
 
 import (
+	"HETIC-CDN-PROJECT/pkg/auth"
+	"HETIC-CDN-PROJECT/pkg/proxy"
+	"HETIC-CDN-PROJECT/pkg/security"
+	"context"
 	"log"
 	"net/http"
 	"time"
-	"HETIC-CDN-PROJECT/pkg/proxy"
-	"HETIC-CDN-PROJECT/pkg/security"
+	"os"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
-	/* 
-	Crée un multiplexer qui va gérer les différentes routes de l’application.
-	 C’est ici on associe les URL à des fonctions spécifiques.*/
+	// Récupérer l'URI MongoDB depuis l'environnement
+	mongoURI := os.Getenv("MONGO_URI")
+	if mongoURI == "" {
+		mongoURI = "mongodb://localhost:27017" // fallback si non défini
+	}
+
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	err = client.Connect(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	db := client.Database("cdnproject")
+	userCollection := db.Collection("users")
+
+	// Initialisation de l'handler d'authentification
+	authHandler := auth.NewAuthHandler(userCollection)
+
+	/*Crée un multiplexer qui va gérer les différentes routes de l’application.*/
 	mux := http.NewServeMux()
 
-	/* Route du proxy pour rediriger les requêtes, vers les serveurs d’origine.
-      Le package proxy va choisir le serveur via le load balancer*/
+	// Endpoints d'authentification
+	mux.HandleFunc("/register", authHandler.Register)
+	mux.HandleFunc("/login", authHandler.Login)
+
+	/* Route du proxy pour rediriger les requêtes, vers les serveurs d’origine.*/
 	mux.Handle("/", proxy.NewProxyHandler())
 
 	// Ajout d'une route basique pour vérifier la disponibilité du service

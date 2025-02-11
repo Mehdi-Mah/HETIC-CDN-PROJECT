@@ -5,7 +5,13 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 )
+
+// Configuration du client HTTP avec timeouts
+var httpClient = &http.Client{
+	Timeout: 10 * time.Second, // Timeout global pour les requêtes HTTP
+}
 
 // NewProxyHandler retourne un handler HTTP pour le proxy.
 func NewProxyHandler() http.Handler {
@@ -28,8 +34,9 @@ func NewProxyHandler() http.Handler {
 		req.Header = r.Header
 
 		// Envoi de la requête vers le serveur d'origine
-		resp, err := http.DefaultClient.Do(req)
+		resp, err := httpClient.Do(req)
 		if err != nil {
+			log.Printf("Erreur de communication avec le serveur d'origine : %v", err)
 			http.Error(w, "Erreur de communication avec le serveur d'origine", http.StatusBadGateway)
 			return
 		}

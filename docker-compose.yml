@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: cdnproject
+    ports:
+       - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+      
+  api:
+    build: .
+    container_name: cdn-project-api
+    restart: always
+    depends_on:
+      - mongo
+    environment:
+  # L'URI de connexion inclut l'utilisateur, le mot de passe et le nom de la base
+      MONGO_URI: mongodb://root:password@mongo:27017/cdnproject?authSource=admin
+      JWT_SECRET: your_secret_key
+    ports:
+      - "8080:8080"
+
+volumes:
+  mongo-data:

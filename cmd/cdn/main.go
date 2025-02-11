@@ -5,6 +5,10 @@ import (
 	"HETIC-CDN-PROJECT/pkg/proxy"
 	"HETIC-CDN-PROJECT/pkg/security"
 	"context"
+	"HETIC-CDN-PROJECT/pkg/middleware"
+	"HETIC-CDN-PROJECT/pkg/proxy"
+	"HETIC-CDN-PROJECT/pkg/security"
+	"HETIC-CDN-PROJECT/handler/fileHandler"
 	"log"
 	"net/http"
 	"os"
@@ -39,6 +43,7 @@ func main() {
 
 	/*Crée un multiplexer qui va gérer les différentes routes de l’application.*/
 	mux := http.NewServeMux()
+	muxWithMiddleware := middleware.LoggingMiddleware(mux)
 
 	// Endpoints d'authentification
 	mux.HandleFunc("/register", authHandler.Register)
@@ -52,12 +57,18 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 
+	// Route pour l'upload de fichiers
+	mux.HandleFunc("/upload", fileHandler.UploadHandler)
+	// Route pour le téléchargement de fichiers
+	mux.HandleFunc("/download", fileHandler.DownloadHandler)
+
 	// Configuration du serveur avec timeouts
 	server := &http.Server{
 		Addr:         ":8080",
-		Handler:      mux, // Ajout du multiplexer au serveur
+		Handler:      muxWithMiddleware, // Utilisation du multiplexer avec middleware
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  15 * time.Second, // Timeout pour les connexions inactives
 	}
 
 	// Démarrage du serveur en mode HTTPS si configuré, sinon en HTTP

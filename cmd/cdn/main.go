@@ -7,8 +7,8 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"time"
 	"os"
+	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -18,7 +18,7 @@ func main() {
 	// Récupérer l'URI MongoDB depuis l'environnement
 	mongoURI := os.Getenv("MONGO_URI")
 	if mongoURI == "" {
-		mongoURI = "mongodb://localhost:27017" // fallback si non défini
+		mongoURI = "mongodb://localhost:27017" // Valeur par défaut pour le développement hors conteneur
 	}
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))

@@ -1,4 +1,4 @@
-FROM golang:1.20-alpine
+FROM golang:1.22.3-alpine
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ RUN go mod download
 COPY . .
 
 # Compiler l'application
-RUN go build -o cdn-app ./cmd/server/main.go
+RUN go build -o cdn-app ./cmd/cdn/main.go
 
 # Exposer le port utilisé par l'application
 EXPOSE 8080

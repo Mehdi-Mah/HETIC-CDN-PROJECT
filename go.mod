@@ -29,7 +29,6 @@ require (
 )
 
 require (
-	go.mongodb.org/mongo-driver v1.17.2
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
 )

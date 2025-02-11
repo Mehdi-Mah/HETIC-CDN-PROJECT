@@ -1,14 +1,12 @@
 package main
 
 import (
+	"HETIC-CDN-PROJECT/handler/fileHandler"
 	"HETIC-CDN-PROJECT/pkg/auth"
-	"HETIC-CDN-PROJECT/pkg/proxy"
-	"HETIC-CDN-PROJECT/pkg/security"
-	"context"
 	"HETIC-CDN-PROJECT/pkg/middleware"
 	"HETIC-CDN-PROJECT/pkg/proxy"
 	"HETIC-CDN-PROJECT/pkg/security"
-	"HETIC-CDN-PROJECT/handler/fileHandler"
+	"context"
 	"log"
 	"net/http"
 	"os"

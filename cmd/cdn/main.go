@@ -4,6 +4,7 @@ import (
 	"HETIC-CDN-PROJECT/pkg/middleware"
 	"HETIC-CDN-PROJECT/pkg/proxy"
 	"HETIC-CDN-PROJECT/pkg/security"
+	"HETIC-CDN-PROJECT/handler/fileHandler"
 	"log"
 	"net/http"
 	"time"
@@ -24,6 +25,11 @@ func main() {
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
 	})
+
+	// Route pour l'upload de fichiers
+	mux.HandleFunc("/upload", fileHandler.UploadHandler)
+	// Route pour le téléchargement de fichiers
+	mux.HandleFunc("/download", fileHandler.DownloadHandler)
 
 	// Configuration du serveur avec timeouts
 	server := &http.Server{

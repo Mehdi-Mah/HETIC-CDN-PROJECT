@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    ports:
+       - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+      
+  api:
+    build: .
+    container_name: cdn-project-api
+    restart: always
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URI: ${MONGO_URI}
+      JWT_SECRET: your_secret_key
+    ports:
+      - "8080:8080"
+
+volumes:
+  mongo-data:

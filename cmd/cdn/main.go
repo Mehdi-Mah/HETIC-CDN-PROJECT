@@ -39,7 +39,7 @@ func main() {
 	// Initialisation de l'handler d'authentification
 	authHandler := auth.NewAuthHandler(userCollection)
 
-	/*Crée un multiplexer qui va gérer les différentes routes de l’application.*/
+	/* Crée un multiplexer qui va gérer les différentes routes de l’application. */
 	mux := http.NewServeMux()
 	muxWithMiddleware := middleware.LoggingMiddleware(mux)
 
@@ -47,7 +47,7 @@ func main() {
 	mux.HandleFunc("/register", authHandler.Register)
 	mux.HandleFunc("/login", authHandler.Login)
 
-	/* Route du proxy pour rediriger les requêtes, vers les serveurs d’origine.*/
+	// Route du proxy pour rediriger les requêtes vers les serveurs d’origine
 	mux.Handle("/", proxy.NewProxyHandler())
 
 	// Ajout d'une route basique pour vérifier la disponibilité du service

@@ -40,7 +40,6 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 // Login gère la connexion et renvoie un token JWT en cas de succès.
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var credentials struct {
-		Username string `json:"username"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}

@@ -3,12 +3,13 @@ package auth
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"golang.org/x/crypto/bcrypt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var jwtSecret = []byte("your_secret_key") // À remplacer par une variable d'environnement en production
@@ -44,8 +45,13 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (string
 	if err != nil {
 		return "", errors.New("utilisateur introuvable")
 	}
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if err != nil {
+
+	// Nettoyage pour éviter les espaces indésirables
+	storedHash := strings.TrimSpace(user.Password)
+	providedPassword := strings.TrimSpace(password)
+
+	// Comparaison sécurisée des mots de passe
+	if err = bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(providedPassword)); err != nil {
 		return "", errors.New("identifiants invalides")
 	}
 

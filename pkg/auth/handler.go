@@ -34,12 +34,13 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Utilisateur inscrit"))
+	json.NewEncoder(w).Encode(map[string]string{"message": "Utilisateur inscrit", "username": user.Username})
 }
 
 // Login gère la connexion et renvoie un token JWT en cas de succès.
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var credentials struct {
+		Username string `json:"username"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}

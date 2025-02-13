@@ -1,0 +1,177 @@
+
+@use "mixins" as *;
+
+.file-manager {
+	@include display-flex(column, flex-start, center, 1rem);
+
+	position: relative;
+	width: 50%;
+	min-width: 30rem;
+	height: 100%;
+	padding: 1rem;
+	border-radius: 1rem;
+	backdrop-filter: blur(2rem) brightness(1.2);
+	box-shadow: 0 0.1rem 1rem rgba(0, 0, 0, 0.2);
+
+	h2 {
+		font-weight: 500;
+	}
+
+	.error {
+		width: 100%;
+		padding: 0.5rem 1rem;
+		border-radius: 1rem;
+		font-size: 0.8em;
+		color: rgb(var(--color-white));
+		background-color: rgba(var(--color-red), 0.5);
+		box-shadow: 0 0.1rem 1rem rgba(0, 0, 0, 0.2);
+	}
+
+	button {
+		padding: 0.5rem 1rem;
+		border-radius: 0.5rem;
+		border: none;
+		color: rgb(var(--color-white));
+		background-color: rgb(var(--color-blue));
+		font-size: 0.8rem;
+		white-space: nowrap;
+		cursor: pointer;
+
+		&:disabled {
+			pointer-events: none;
+			opacity: 0.5;
+		}
+	}
+
+	input[type="text"],
+	input[type="file"] {
+		width: 100%;
+		padding: 0.5rem 1rem;
+		border-radius: 0.5rem;
+		background-color: rgba(var(--color-white), 0.2);
+		border: 1px solid rgba(var(--color-white), 0.2);
+		outline: transparent;
+	}
+
+	.folder-tree {
+		@include display-flex(column, flex-start, flex-start, 1rem);
+	
+		position: relative;
+		width: 100%;
+		height: 100%;
+		padding: 0.5rem;
+		border-radius: 0.5rem;
+		background-color: rgba(var(--color-black), 0.15);
+		user-select: none;
+	
+		.folder-item {
+			&[root] {
+				margin-bottom: 0.5rem;
+				font-weight: 600;
+				cursor: pointer;
+			}
+
+			&[empty] {
+				opacity: 0.6;
+				filter: saturate(0);
+				font-weight: 300;
+				pointer-events: none;
+				user-select: none;
+			}
+
+			&[selected] {
+				border-right: 1rem solid rgba(var(--color-black), 0.3);
+				background-color: rgba(var(--color-black), 0.2) !important;
+			}
+		}
+		
+			
+		.folder-item, .file-item {
+			--background-alpha: 0;
+
+			position: relative;
+			width: 100%;
+			padding: 0 0.25em;
+			border-radius: 0.25rem;
+			background-color: rgba(var(--color-black), var(--background-alpha));
+			cursor: pointer;
+			transition:
+				background-color 0.2s ease-out;
+			;
+
+			&:hover		{--background-alpha: 0.2;}
+			&:active	{--background-alpha: 0.4;}
+
+			&::before {
+				content: "";
+				position: absolute;
+				left: -0.15rem;
+				top: 50%;
+				border-top: 1px solid rgb(var(--color-black));
+				width: 0.4rem;
+				opacity: 0.5;
+			}
+		}
+
+		.folder-content {
+			position: relative;
+
+			&:has(> .folder-item[expanded]) {
+				--line-bottom-margin: 1.5lh;
+
+				&::before {
+					content: "";
+					position: absolute;
+					left: 0.85rem;
+					top: 1lh;
+					border-left: 1px solid rgb(var(--color-black));
+					height: calc(100% - var(--line-bottom-margin));
+					opacity: 0.5;
+				}
+
+				:has(:last-of-type > [expanded]) {
+					--line-bottom-margin: 1lh;
+				}
+			}
+		}
+
+		.nested-content {
+			@include display-flex(column, flex-start, flex-start, 0rem);
+			
+			margin-left: 1rem;
+		}
+	}
+	
+	.file-upload {
+		@include display-flex(column, flex-start, flex-start, 0.5rem);
+
+		width: 100%;
+		padding: 0.5rem;
+		border-radius: 0.5rem;
+		// border: 3px dashed rgba(var(--color-black), 0.2);
+		background-color: rgba(var(--color-black), 0.15);
+
+		label[for="file-upload"] {
+			@include display-flex(column, center, center, 0.5rem);
+	
+			position: relative;
+			width: 100%;
+			height: 4rem;
+			padding: 0.5rem;
+			border-radius: 0.5rem;
+			border: 3px dashed rgba(var(--color-black), 0.2);
+			background-color: rgba(var(--color-black), 0.1);
+			cursor: pointer;
+			
+			input#file-upload {display: none;}
+
+			button {
+				// color: rgb(var(--color-black));
+				background-color: rgba(var(--color-black), 0.3);
+				min-width: 40%;
+				pointer-events: none;
+				user-select: none;
+			}
+		}
+	}
+}

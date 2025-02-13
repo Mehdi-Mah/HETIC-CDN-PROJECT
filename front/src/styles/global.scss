@@ -1,0 +1,87 @@
+
+@import url("https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&display=swap");
+
+@mixin display-flex($direction: row, $justfiy: flex-start, $align: flex-start, $gap: 1rem, $wrap: nowrap) {
+	display: flex;
+	
+	@if ($direction != row)					{flex-direction: $direction;}
+	@if ($justfiy != flex-start)		{justify-content: $justfiy;}
+	@if ($align != flex-start)			{align-items: $align;}
+	@if ($wrap != nowrap)						{flex-wrap: $wrap;}
+	@if ($gap != 0)									{gap: $gap;}
+}
+
+
+:root {
+	font-size: 20px;
+	font-family: "Kanit", serif;
+
+	
+	--color-white-rgb:					rgb(209, 226, 236);
+	--color-white:							209, 226, 236;
+	
+	--color-black-rgb:					rgb(11, 38, 68);
+	--color-black:							11, 38, 68;
+	
+	--color-red-rgb:						rgb(255, 28, 66);
+	--color-red:								255, 28, 66;
+	
+	--color-blue-rgb:						rgb(65, 68, 255);
+	--color-blue:								65, 68, 255;
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	font: inherit;
+	box-sizing: border-box;
+	color: inherit;
+}
+*::before, *::after {box-sizing: border-box;}
+
+
+html {
+	color-scheme: light;
+	width: 100%;
+	height: 100%;
+}
+
+body {
+	@include display-flex(column, flex-start, center, 0);
+
+	position: relative;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	font-size: 100%;
+	color: rgb(var(--color-black));
+	// background-color: transparent;
+}
+
+img, picture, svg, video {display: block;}
+
+
+#root {
+	@include display-flex(column, flex-start, center, 1rem);
+
+	width: 100%;
+	height: 100%;
+	padding: 1rem;
+}
+
+.vanta-container {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	z-index: -10;
+}
+
+main {
+	@include display-flex(column, center, center, 1rem);
+
+	width: 100%;
+	height: 100%;
+
+}

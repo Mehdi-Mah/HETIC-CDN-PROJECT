@@ -1,0 +1,78 @@
+
+@use "mixins" as *;
+
+.auth-container {
+	@include display-flex(column, center, center, 1rem);
+
+	position: relative;
+	width: 30%;
+	min-width: 20rem;
+	padding: 1rem;
+	border-radius: 1rem;
+	backdrop-filter: blur(2rem) brightness(1.2);
+	box-shadow: 0 0.1rem 1rem rgba(0, 0, 0, 0.2);
+	text-align: center;
+
+	h2 {
+		font-weight: 500;
+	}
+
+	form {
+		@include display-flex(column, center, center, 1rem);
+
+		width: 100%;
+
+		input:not([type="checkbox"]) {
+			width: 100%;
+			padding: 0.5rem 1rem;
+			border-radius: 0.5rem;
+			background-color: rgba(var(--color-white), 0.2);
+			border: 1px solid rgba(var(--color-white), 0.2);
+			outline: transparent;
+
+			&::placeholder {
+				color: rgb(var(--color-black));
+				opacity: 0.3;
+				font-weight: 300;
+				font-size: 0.9em;
+			}
+		}
+
+		button {
+			width: 100%;
+			padding: 0.5rem 1rem;
+			border-radius: 0.5rem;
+			color: rgb(var(--color-white));
+			background-color: rgb(var(--color-blue));
+			border: none;
+			cursor: pointer;
+
+			&:disabled {
+				pointer-events: none;
+				opacity: 0.5;
+			}
+		}
+
+		.terms {
+			@include display-flex(row, flex-start, center, 0.2rem);
+
+			font-size: 0.7em;
+			white-space: nowrap;
+			width: 100%;
+
+			input {
+				width: 1em;
+				aspect-ratio: 1;
+			}
+		
+			a {
+				color: rgb(var(--color-blue));
+				text-decoration: underline;
+		
+				&:hover {
+					text-decoration: underline;
+				}
+			}
+		}
+	}
+}

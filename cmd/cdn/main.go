@@ -39,9 +39,22 @@ func main() {
 	// Initialisation de l'handler d'authentification
 	authHandler := auth.NewAuthHandler(userCollection)
 
-	/* Crée un multiplexer qui va gérer les différentes routes de l’application. */
+	// Middleware pour gérer les en-têtes CORS
+	corsMiddleware := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			if r.Method == http.MethodOptions {
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+
 	mux := http.NewServeMux()
-	muxWithMiddleware := middleware.LoggingMiddleware(mux)
+	muxWithMiddleware := middleware.LoggingMiddleware(corsMiddleware(mux))
 
 	// Endpoints d'authentification
 	mux.HandleFunc("/register", authHandler.Register)

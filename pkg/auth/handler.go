@@ -22,6 +22,13 @@ func NewAuthHandler(col *mongo.Collection) *AuthHandler {
 
 // Register gère l'inscription d'un nouvel utilisateur.
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 	var user User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, "Entrée invalide", http.StatusBadRequest)
@@ -39,6 +46,13 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 // Login gère la connexion et renvoie un token JWT en cas de succès.
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET,POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 	var credentials struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`

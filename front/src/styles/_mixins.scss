@@ -1,0 +1,11 @@
+// _mixins.scss
+
+@mixin display-flex($direction: row, $justfiy: flex-start, $align: flex-start, $gap: 1rem, $wrap: nowrap) {
+	display: flex;
+	
+	@if ($direction != row)					{flex-direction: $direction;}
+	@if ($justfiy != flex-start)		{justify-content: $justfiy;}
+	@if ($align != flex-start)			{align-items: $align;}
+	@if ($wrap != nowrap)						{flex-wrap: $wrap;}
+	@if ($gap != 0)									{gap: $gap;}
+}

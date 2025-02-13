@@ -24,9 +24,6 @@ services:
       JWT_SECRET: your_secret_key
     ports:
       - "8080:8080"
-    volumes:
-      - ./HETIC-CDN-PROJECT:/cdn-app  # Montre le code source local dans le conteneur
-      - /app/vendor  # Cache les dépendances pour éviter de les re-télécharger
 
 volumes:
   mongo-data:

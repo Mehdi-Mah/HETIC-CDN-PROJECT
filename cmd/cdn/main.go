@@ -19,8 +19,7 @@ import (
 func main() {
 	// Liste des serveurs d'origine pour le reverse proxy
 	targets := []string{
-		"http://cdn-project-api:8080", // votre API principale dockerrise
-		"http://localhost:8080",       // api local
+		"http://localhost:8081", 	 // votre API principale en local
 	}
 
 	// Création de l'instance du reverse proxy avec failover
@@ -29,10 +28,10 @@ func main() {
 	// Récupérer l'URI MongoDB depuis l'environnement
 	mongoURI := os.Getenv("MONGO_URI")
 	if mongoURI == "" {
-		mongoURI = "mongodb://localhost:27017" // Valeur par défaut pour le développement hors conteneur
+		mongoURI = "mongodb://mongo:27017" // Utilisation du nom de service Docker pour MongoDB
 	}
 
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://root:password@localhost:27017/cdnproject?authSource=admin"))
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -87,7 +86,7 @@ func main() {
 
 	// Configuration du serveur avec timeouts
 	server := &http.Server{
-		Addr:         ":8080",
+		Addr:         ":8081",
 		Handler:      muxWithMiddleware,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
@@ -96,10 +95,10 @@ func main() {
 
 	// Démarrage du serveur en HTTPS si configuré, sinon en HTTP
 	if security.UseTLS() {
-		log.Println("Serveur démarré en HTTPS sur le port 8080")
+		log.Println("Serveur démarré en HTTPS sur le port 8081")
 		log.Fatal(server.ListenAndServeTLS("", ""))
 	} else {
-		log.Println("Serveur démarré en HTTP sur le port 8080")
+		log.Println("Serveur démarré en HTTP sur le port 8081")
 		log.Fatal(server.ListenAndServe())
 	}
 }

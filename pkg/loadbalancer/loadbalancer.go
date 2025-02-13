@@ -16,7 +16,7 @@ func Instance() *LoadBalancer {
 		// Liste de serveurs d'origine, à adapter selon l'infrastructure
 		lb = &LoadBalancer{
 			servers: []string{
-				"http://cdn-project-api:8080",
+				"http://cdn-project-api:8081",
 			},
 			index: 0,
 		}

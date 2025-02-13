@@ -14,7 +14,7 @@ COPY . .
 RUN go build -o cdn-app ./cmd/cdn/main.go
 
 # Exposer le port utilisé par l'application
-EXPOSE 8080
+EXPOSE 8081
 
 # Démarrer l'application
 CMD ["./cdn-app"]

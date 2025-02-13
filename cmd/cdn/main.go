@@ -17,13 +17,22 @@ import (
 )
 
 func main() {
+	// Liste des serveurs d'origine pour le reverse proxy
+	targets := []string{
+		"http://cdn-project-api:8080", // votre API principale dockerrise
+		"http://localhost:8080",       // api local
+	}
+
+	// Création de l'instance du reverse proxy avec failover
+	reverseProxy := proxy.NewFailoverReverseProxy(targets)
+
 	// Récupérer l'URI MongoDB depuis l'environnement
 	mongoURI := os.Getenv("MONGO_URI")
 	if mongoURI == "" {
 		mongoURI = "mongodb://localhost:27017" // Valeur par défaut pour le développement hors conteneur
 	}
 
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://root:password@localhost:27017/cdnproject?authSource=admin"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -39,37 +48,53 @@ func main() {
 	// Initialisation de l'handler d'authentification
 	authHandler := auth.NewAuthHandler(userCollection)
 
-	/* Crée un multiplexer qui va gérer les différentes routes de l’application. */
+	// Middleware pour gérer les en-têtes CORS
+	corsMiddleware := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			if r.Method == http.MethodOptions {
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+
+	// Création du multiplexer principal
 	mux := http.NewServeMux()
-	muxWithMiddleware := middleware.LoggingMiddleware(mux)
 
 	// Endpoints d'authentification
 	mux.HandleFunc("/register", authHandler.Register)
 	mux.HandleFunc("/login", authHandler.Login)
 
-	// Route du proxy pour rediriger les requêtes vers les serveurs d’origine
-	mux.Handle("/", proxy.NewProxyHandler())
+	// Intégration du reverse proxy :
+	// Les requêtes commençant par /proxy seront redirigées via le reverse proxy.
+	mux.Handle("/proxy/", http.StripPrefix("/proxy", reverseProxy))
 
-	// Ajout d'une route basique pour vérifier la disponibilité du service
+	// Route basique pour vérifier la disponibilité du service
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
 	})
 
-	// Route pour l'upload de fichiers
+	// Routes pour l'upload et le téléchargement de fichiers
 	mux.HandleFunc("/upload", fileHandler.UploadHandler)
-	// Route pour le téléchargement de fichiers
 	mux.HandleFunc("/download", fileHandler.DownloadHandler)
+
+	// Application des middlewares CORS et de logging
+	muxWithMiddleware := middleware.LoggingMiddleware(corsMiddleware(mux))
 
 	// Configuration du serveur avec timeouts
 	server := &http.Server{
 		Addr:         ":8080",
-		Handler:      muxWithMiddleware, // Utilisation du multiplexer avec middleware
+		Handler:      muxWithMiddleware,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  15 * time.Second, // Timeout pour les connexions inactives
+		IdleTimeout:  15 * time.Second,
 	}
 
-	// Démarrage du serveur en mode HTTPS si configuré, sinon en HTTP
+	// Démarrage du serveur en HTTPS si configuré, sinon en HTTP
 	if security.UseTLS() {
 		log.Println("Serveur démarré en HTTPS sur le port 8080")
 		log.Fatal(server.ListenAndServeTLS("", ""))

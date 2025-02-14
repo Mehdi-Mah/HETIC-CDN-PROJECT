@@ -61,16 +61,24 @@ func ListFilesHandler(w http.ResponseWriter, r *http.Request) {
 			return nil // On ignore le dossier root de l'utilisateur
 		}
 
-		// Ajouter les fichiers/dossiers à la réponse
+		// Vérifier si c'est un fichier ou un dossier
 		fileType := "file"
+		cleanPath := relPath // Par défaut, garder le chemin tel quel
+
 		if info.IsDir() {
 			fileType = "folder"
+		} else {
+			// ✅ Ne garder que le dossier parent pour un fichier
+			cleanPath = filepath.Dir(relPath)
+			if cleanPath == "." { // Si le fichier est dans le dossier root, path devient ""
+				cleanPath = ""
+			}
 		}
 
 		files = append(files, FileInfo{
 			Name: info.Name(),
 			Type: fileType,
-			Path: relPath,
+			Path: cleanPath,
 		})
 
 		return nil
@@ -106,4 +114,3 @@ func extractUsernameFromToken(authHeader string) (string, error) {
 	fmt.Println("Erreur: username non trouvé dans le token")
 	return "", fmt.Errorf("username non trouvé dans le token")
 }
-

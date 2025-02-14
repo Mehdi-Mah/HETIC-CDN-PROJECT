@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import "../styles/files.scss";
+import {handleFileDownload, createFolder, handleDelete} from "../utils/fileHandler"
 
 const FileManager = () => {
 	const [files, setFiles] = useState([]);
@@ -13,6 +14,8 @@ const FileManager = () => {
 	const [uploadFile, setUploadFile] = useState(null);
 	const [uploadPath, setUploadPath] = useState("/");
 	const [ROOT_FOLDER_NAME, setRootFolderName] = useState(`Fichiers de "${username}"`);
+	const [newFolderName, setNewFolderName] = useState("");
+	const [initPage, setInitPage] = useState(false)
 
 	let idCounter = 0;
 
@@ -32,7 +35,10 @@ const FileManager = () => {
 				console.error("Erreur de décodage du token:", err);
 			}
 		}
-		fetchFiles();
+		if(!initPage) {
+			setInitPage(true);
+			fetchFiles();
+		}
 	}, []);
 
 	const fetchFiles = async () => {
@@ -40,16 +46,6 @@ const FileManager = () => {
 			const response = await axios.get(`${import.meta.env.VITE_API_URL}/files`, {
 				headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
 			});
-
-			// Simulated API response for testing
-			response.data = [
-				{ name: "V1", type: "folder", path: "Work/Presentation/V1" },
-				{ name: "V2", type: "folder", path: "Work/Presentation/V2" },
-				{ name: "Projects", type: "folder", path: "Projects/" },
-				{ name: "Projects", type: "folder", path: "Presentation/" },
-				{ name: "resume.pdf", type: "file", path: "/" },
-				{ name: "presentation.pdf", type: "file", path: "Work/Presentation/V1" }
-			];
 
 			// Assign a unique `id` to every file and folder
 			if (Array.isArray(response.data)) {
@@ -75,14 +71,13 @@ const FileManager = () => {
 			setUploadError("Aucun fichier sélectionné.");
 			return;
 		}
-
+	
 		const formData = new FormData();
 		formData.append("file", uploadFile);
-		formData.append("path", uploadPath); // Send current folder path
-		
-
+		formData.append("path", uploadPath); // Envoie le chemin du dossier sélectionné
+	
 		try {
-			await axios.post(`${import.meta.env.VITE_API_URL}/upload`, formData, {
+			await axios.post(`${import.meta.env.VITE_API_URL}/upload-file`, formData, {
 				headers: {
 					Authorization: `Bearer ${localStorage.getItem("token")}`,
 					"Content-Type": "multipart/form-data",
@@ -90,12 +85,12 @@ const FileManager = () => {
 			});
 			setUploadFile(null);
 			setUploadError(null);
-			fetchFiles(); // Refresh file list
+			fetchFiles(); // Rafraîchir la liste après l'upload
 		} catch (err) {
 			setUploadError("Échec du téléchargement du fichier.");
 		}
 	};
-
+	
 	// Toggle folder expansion using `id`
 	const toggleFolder = (folderID, folderPath) => {
 		setExpandedFolders((prev) => ({
@@ -170,24 +165,33 @@ const FileManager = () => {
 				const hasFiles = folder._files?.length > 0;
 				const hasSubfolders = Object.keys(folder).some((key) => key !== "_files" && key !== "id" && key !== "path");
 				const isEmpty = !hasFiles && !hasSubfolders;
-	
+				
 				return (
 					<div className="folder-content" key={folderID} depth={depth}>
-						<div
+							<div
 							className="folder-item"
 							{...(isRoot ? { root: "" } : {})}
 							{...(isExpanded ? { expanded: "" } : {})}
 							{...(isSelected ? { selected: "" } : {})}
 							onClick={() => toggleFolder(folderID, folderPath)}
-						>
-							{folderIcon} {folderName}
-						</div>
+							>
+								<span>
+									{folderIcon} {folderName}
+								</span>
+								{!isRoot && 
+									<button onClick={() => handleDelete({ name: folderName, path: folderPath, fetchFiles })} className="button-delete">
+										❌
+									</button>								
+								}
+							</div>
 						{isExpanded && (
 							<div className="nested-content">
 								{renderFoldersAndFiles(folder, depth + 1)}
 								{folder._files?.map((file) => (
 									<div className="file-item" key={file.id}>
-										📄 {file.name}
+										<span className="file" onClick={() => handleFileDownload(file)}>
+											📄 {file.name}
+										</span>
 									</div>
 								))}
 								
@@ -198,6 +202,7 @@ const FileManager = () => {
 				);
 			});
 	};
+
 
 	return (
 		<div className="file-manager">
@@ -219,6 +224,16 @@ const FileManager = () => {
 				</label>
 				<button onClick={handleFileUpload}>Téléverser</button>
 				{uploadError && <p className="error">{uploadError}</p>}
+			</div>
+
+			<div className="folder-creation">
+				<input
+					type="text"
+					placeholder="Nom du dossier"
+					value={newFolderName}
+					onChange={(e) => setNewFolderName(e.target.value)}
+				/>
+				<button onClick={() => createFolder(newFolderName, setNewFolderName, uploadPath, fetchFiles)}>Créer Dossier</button>
 			</div>
 		</div>
 	);

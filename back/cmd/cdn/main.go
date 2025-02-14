@@ -1,7 +1,7 @@
 package main
 
 import (
-	"HETIC-CDN-PROJECT/handler/fileHandler"
+	"HETIC-CDN-PROJECT/pkg/fileHandler"
 	"HETIC-CDN-PROJECT/pkg/auth"
 	"HETIC-CDN-PROJECT/pkg/middleware"
 	// "HETIC-CDN-PROJECT/pkg/proxy"
@@ -69,6 +69,11 @@ func main() {
 	// Endpoints d'authentification
 	mux.HandleFunc("/register", authHandler.Register)
 	mux.HandleFunc("/login", authHandler.Login)
+	mux.HandleFunc("/files", fileHandler.ListFilesHandler)
+	mux.HandleFunc("/create-folder", fileHandler.CreateFolderHandler)
+	mux.HandleFunc("/upload-file", fileHandler.UploadHandler)
+	mux.HandleFunc("/download", fileHandler.DownloadHandler)
+	mux.HandleFunc("/delete", fileHandler.DeleteHandler)
 
 	// Créer le load balancer en utilisant l'algorithme Round Robin, un timeout de 5 sec et des health checks toutes les 5 sec
 	lb := loadbalancer.NewLoadBalancer(targets, loadbalancer.RoundRobin, 5*time.Second, 5*time.Second)
@@ -82,13 +87,9 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 
-	// Routes pour l'upload et le téléchargement de fichiers
-	mux.HandleFunc("/upload", fileHandler.UploadHandler)
-	mux.HandleFunc("/download", fileHandler.DownloadHandler)
-
 	// Application des middlewares CORS et de logging
 	muxWithMiddleware := middleware.LoggingMiddleware(corsMiddleware(mux))
-
+	
 	// Configuration du serveur avec timeouts
 	server := &http.Server{
 		Addr:         ":8080",

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -26,7 +27,7 @@ func NewAuthService(col *mongo.Collection) *AuthService {
 
 // Register enregistre un nouvel utilisateur en hashant son mot de passe.
 func (s *AuthService) Register(ctx context.Context, user *User) error {
-	// Optionnel : Vérifier si l'email existe déjà
+	// Vérifier si l'email existe déjà
 	count, err := s.userCollection.CountDocuments(ctx, bson.M{"email": user.Email})
 	if err != nil {
 		return fmt.Errorf("erreur lors de la vérification de l'email : %w", err)
@@ -52,8 +53,19 @@ func (s *AuthService) Register(ctx context.Context, user *User) error {
 	if err != nil {
 		return fmt.Errorf("erreur lors de l'insertion de l'utilisateur : %w", err)
 	}
+
+	userDir := fmt.Sprintf("uploads/%sUploads", user.Username)
+	if err := os.MkdirAll(userDir, os.ModePerm); err != nil {
+		fmt.Printf("Erreur lors de la création du dossier : %v\n", err)
+		return fmt.Errorf("erreur lors de la création du dossier utilisateur : %w", err)
+	}
+	fmt.Println("Dossier créé avec succès :", userDir)
+	
+	
+
 	return nil
 }
+
 
 // Login vérifie les identifiants et génère un token JWT si valides.
 func (s *AuthService) Login(ctx context.Context, email, password string) (string, error) {
@@ -72,6 +84,7 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (string
 	// Création du token JWT avec expiration dans 24h
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"userId": user.ID.Hex(),
+		"username": user.Username,
 		"exp":    time.Now().Add(24 * time.Hour).Unix(),
 	})
 	tokenString, err := token.SignedString(jwtSecret)

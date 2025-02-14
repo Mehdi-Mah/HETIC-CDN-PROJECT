@@ -4,8 +4,9 @@ import (
 	"HETIC-CDN-PROJECT/handler/fileHandler"
 	"HETIC-CDN-PROJECT/pkg/auth"
 	"HETIC-CDN-PROJECT/pkg/middleware"
-	"HETIC-CDN-PROJECT/pkg/proxy"
+	// "HETIC-CDN-PROJECT/pkg/proxy"
 	"HETIC-CDN-PROJECT/pkg/security"
+	"HETIC-CDN-PROJECT/pkg/loadbalancer"
 	"context"
 	"log"
 	"net/http"
@@ -17,10 +18,19 @@ import (
 )
 
 func main() {
+	// Liste des serveurs d'origine pour le reverse proxy
+	targets := []string{
+		"http://localhost:8080",
+		"http://api:8080",
+	}
+
+	// Création de l'instance du reverse proxy avec failover
+	// reverseProxy := proxy.NewFailoverReverseProxy(targets)
+
 	// Récupérer l'URI MongoDB depuis l'environnement
 	mongoURI := os.Getenv("MONGO_URI")
 	if mongoURI == "" {
-		mongoURI = "mongodb://localhost:27017" // Valeur par défaut pour le développement hors conteneur
+		mongoURI = "mongodb://mongo:27017" // Utilisation du nom de service Docker pour MongoDB
 	}
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
@@ -53,36 +63,42 @@ func main() {
 		})
 	}
 
+	// Création du multiplexer principal
 	mux := http.NewServeMux()
-	muxWithMiddleware := middleware.LoggingMiddleware(corsMiddleware(mux))
 
 	// Endpoints d'authentification
 	mux.HandleFunc("/register", authHandler.Register)
 	mux.HandleFunc("/login", authHandler.Login)
 
-	// Route du proxy pour rediriger les requêtes vers les serveurs d’origine
-	mux.Handle("/", proxy.NewProxyHandler())
+	// Créer le load balancer en utilisant l'algorithme Round Robin, un timeout de 5 sec et des health checks toutes les 5 sec
+	lb := loadbalancer.NewLoadBalancer(targets, loadbalancer.RoundRobin, 5*time.Second, 5*time.Second)
 
-	// Ajout d'une route basique pour vérifier la disponibilité du service
+	// Intégration du reverse proxy :
+	// Les requêtes commençant par /proxy seront redirigées via le reverse proxy.
+	mux.Handle("/proxy/", http.StripPrefix("/proxy", lb))
+
+	// Route basique pour vérifier la disponibilité du service
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
 	})
 
-	// Route pour l'upload de fichiers
+	// Routes pour l'upload et le téléchargement de fichiers
 	mux.HandleFunc("/upload", fileHandler.UploadHandler)
-	// Route pour le téléchargement de fichiers
 	mux.HandleFunc("/download", fileHandler.DownloadHandler)
+
+	// Application des middlewares CORS et de logging
+	muxWithMiddleware := middleware.LoggingMiddleware(corsMiddleware(mux))
 
 	// Configuration du serveur avec timeouts
 	server := &http.Server{
 		Addr:         ":8080",
-		Handler:      muxWithMiddleware, // Utilisation du multiplexer avec middleware
+		Handler:      muxWithMiddleware,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  15 * time.Second, // Timeout pour les connexions inactives
+		IdleTimeout:  15 * time.Second,
 	}
 
-	// Démarrage du serveur en mode HTTPS si configuré, sinon en HTTP
+	// Démarrage du serveur en HTTPS si configuré, sinon en HTTP
 	if security.UseTLS() {
 		log.Println("Serveur démarré en HTTPS sur le port 8080")
 		log.Fatal(server.ListenAndServeTLS("", ""))

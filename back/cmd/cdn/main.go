@@ -4,9 +4,10 @@ import (
 	"HETIC-CDN-PROJECT/pkg/fileHandler"
 	"HETIC-CDN-PROJECT/pkg/auth"
 	"HETIC-CDN-PROJECT/pkg/middleware"
+
 	// "HETIC-CDN-PROJECT/pkg/proxy"
-	"HETIC-CDN-PROJECT/pkg/security"
 	"HETIC-CDN-PROJECT/pkg/loadbalancer"
+	"HETIC-CDN-PROJECT/pkg/security"
 	"context"
 	"log"
 	"net/http"
@@ -20,8 +21,7 @@ import (
 func main() {
 	// Liste des serveurs d'origine pour le reverse proxy
 	targets := []string{
-		"http://localhost:8080",
-		"http://api:8080",
+		"http://localhost:8081",
 	}
 
 	// Création de l'instance du reverse proxy avec failover
@@ -33,6 +33,7 @@ func main() {
 		mongoURI = "mongodb://mongo:27017" // Utilisation du nom de service Docker pour MongoDB
 	}
 
+	// Assurez-vous que l'URI de connexion contient les bonnes informations d'identification
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		log.Fatal(err)
@@ -92,7 +93,7 @@ func main() {
 	
 	// Configuration du serveur avec timeouts
 	server := &http.Server{
-		Addr:         ":8080",
+		Addr:         ":8081",
 		Handler:      muxWithMiddleware,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
@@ -101,10 +102,10 @@ func main() {
 
 	// Démarrage du serveur en HTTPS si configuré, sinon en HTTP
 	if security.UseTLS() {
-		log.Println("Serveur démarré en HTTPS sur le port 8080")
+		log.Println("Serveur démarré en HTTPS sur le port 8081")
 		log.Fatal(server.ListenAndServeTLS("", ""))
 	} else {
-		log.Println("Serveur démarré en HTTP sur le port 8080")
+		log.Println("Serveur démarré en HTTP sur le port 8081")
 		log.Fatal(server.ListenAndServe())
 	}
 }

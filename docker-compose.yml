@@ -5,8 +5,6 @@ services:
     image: mongo:latest
     container_name: mongo
     restart: always
-    env_file:
-      - ./back/.env
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: password
@@ -21,8 +19,6 @@ services:
     build: ./back
     container_name: cdn-api
     restart: always
-    env_file:
-      - ./back/.env
     depends_on:
       - mongo
     environment:
@@ -40,7 +36,7 @@ services:
     depends_on:
       - api
     environment:
-      VITE_API_URL: http://cdn-api:8081
+      VITE_API_URL: http://localhost:8081
     ports:
       - "80:80"
     networks:

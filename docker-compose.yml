@@ -1,0 +1,70 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    restart: always
+    env_file:
+      - ./back/.env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
+  api:
+    build: ./back
+    volumes:
+      - ./back:/app/src
+    container_name: cdn-api
+    restart: always
+    env_file:
+      - ./back/.env
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URI: ${MONGO_URI}
+      JWT_SECRET: your_secret_key
+    ports:
+      - "8081:8081"
+    networks:
+      - app-network
+  front:
+    build: ./front
+    volumes:
+      - ./front:/app/src
+    container_name: cdn-front
+    restart: always
+    env_file:
+      - ./back/.env
+    depends_on:
+      - api
+    environment:
+      # Assurez-vous que votre app front utilise bien cette variable pour appeler l'API
+      VITE_API_URL: ${VITE_API_URL}
+    ports:
+      - "80:80"
+    networks:
+      - app-network
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+volumes:
+  mongo-data:
+
+
+networks:
+  app-network:
+    external: true

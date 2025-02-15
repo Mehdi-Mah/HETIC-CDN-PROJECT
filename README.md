@@ -18,6 +18,9 @@
 - Création dossier
 - Suppression dossier et fichier
 - Limitation à 10 niveaux de profondeur pour la hiérarchie des dossiers
+- Load Balancing et Scalabilité
+- Proxy et Cache
+- Conteneurisation du CDN avec Docker 
 
 ## 📥 Installation
 

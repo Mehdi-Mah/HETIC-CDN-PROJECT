@@ -16,5 +16,4 @@ export const isAuthenticated = () => {
 export const logout = () => {
 	localStorage.removeItem("token");
 	localStorage.removeItem("token_expiry");
-	window.location.href = "/login"; // Redirect to login
 };

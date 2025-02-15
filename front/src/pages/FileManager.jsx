@@ -179,7 +179,7 @@ const FileManager = () => {
 									{folderIcon} {folderName}
 								</span>
 								{!isRoot && 
-									<button onClick={() => handleDelete({ name: folderName, path: folderPath, fetchFiles })} className="button-delete">
+									<button onClick={() => handleDelete({ name: folderName, path: folderPath, fetchFiles, type: "directory" })} className="button-delete">
 										❌
 									</button>								
 								}
@@ -192,6 +192,11 @@ const FileManager = () => {
 										<span className="file" onClick={() => handleFileDownload(file)}>
 											📄 {file.name}
 										</span>
+										{file.type === 'file' &&
+										<button onClick={() => handleDelete({ name: file.name, path: folderPath, fetchFiles, type: "file" })} className="button-delete">
+										❌
+										</button>	
+										}
 									</div>
 								))}
 								

@@ -111,6 +111,15 @@
 				width: 0.4rem;
 				opacity: 0.5;
 			}
+			.button-delete {
+				color: white;
+				border: none;
+				padding: 5px 10px;
+				cursor: pointer;
+				border-radius: 4px;
+				margin-left: auto;
+				float: right;
+			}
 		}
 
 		.folder-content {
@@ -228,7 +237,6 @@
 		}
 
 		.button-delete {
-			background-color: red;
 			color: white;
 			border: none;
 			padding: 5px 10px;

@@ -67,7 +67,7 @@ export const handleDelete = async (item) => {
 
     try {
         await axios.delete(`${import.meta.env.VITE_API_URL}/delete`, {
-            data: { path: item.path }, // Spécifier `data` pour DELETE
+            data: { path: item.path, type: item.type, name: item.name }, // Spécifier `data` pour DELETE
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
 

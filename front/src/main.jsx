@@ -25,9 +25,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 					<Route path="/register" element={<Register />} />
 
 					{/* Protected routes */}
-					{/* <Route element={<PrivateRoute />}> */}
+					<Route element={<PrivateRoute />}>
 						<Route path="/files" element={<FileManager />} />
-					{/* </Route> */}
+					</Route>
 
 					{/* 404 Not Found */}
 					<Route path="*" element={<NotFound />} />

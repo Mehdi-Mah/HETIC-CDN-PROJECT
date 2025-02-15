@@ -1,17 +1,16 @@
 import axios from "axios";
 
 
-export const handleFileDownload = async (file) => {
+export const handleFileDownload = async ({file, path}) => {
     if (!file || file.type !== "file") {
         console.error("Ce n'est pas un fichier téléchargeable !");
         return;
     }
-
     console.log("Téléchargement du fichier :", file.name);
 
     try {
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/download`, {
-            params: { path: file.path },
+            params: { path, name: file.name },
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
             responseType: "blob", // Pour récupérer un fichier en binaire
         });

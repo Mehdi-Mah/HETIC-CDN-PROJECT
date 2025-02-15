@@ -189,7 +189,7 @@ const FileManager = () => {
 								{renderFoldersAndFiles(folder, depth + 1)}
 								{folder._files?.map((file) => (
 									<div className="file-item" key={file.id}>
-										<span className="file" onClick={() => handleFileDownload(file)}>
+										<span className="file" onClick={() => handleFileDownload({file, path: folderPath})}>
 											📄 {file.name}
 										</span>
 										{file.type === 'file' &&

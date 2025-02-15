@@ -68,7 +68,7 @@ func ListFilesHandler(w http.ResponseWriter, r *http.Request) {
 		if info.IsDir() {
 			fileType = "folder"
 		} else {
-			// ✅ Ne garder que le dossier parent pour un fichier
+			// Ne garder que le dossier parent pour un fichier
 			cleanPath = filepath.Dir(relPath)
 			if cleanPath == "." { // Si le fichier est dans le dossier root, path devient ""
 				cleanPath = ""

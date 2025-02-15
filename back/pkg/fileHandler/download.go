@@ -25,17 +25,30 @@ func DownloadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Récupérer le paramètre `path` du fichier à télécharger
+	// Récupérer les paramètres `path` et `name` du fichier à télécharger
 	filePath := r.URL.Query().Get("path")
-	if filePath == "" {
-		http.Error(w, "Chemin du fichier requis", http.StatusBadRequest)
+	fileName := r.URL.Query().Get("name")
+
+	if filePath == "" || fileName == "" {
+		http.Error(w, "Chemin et nom du fichier requis", http.StatusBadRequest)
 		return
 	}
 
+	// Normalisation des chemins et noms de fichiers
+	filePath = strings.TrimSpace(filePath)
+	filePath = filepath.Clean(filePath)
+	fileName = strings.TrimSpace(fileName)
+
 	// Construire le chemin absolu du fichier
 	basePath := fmt.Sprintf("uploads/%sUploads", username)
-	fullPath := filepath.Join(basePath, filePath)
+	fullPath := filepath.Join(basePath, filePath, fileName)
 	fullPath = filepath.Clean(fullPath)
+
+	// Logs pour le débogage
+	fmt.Println("Base Path:", basePath)
+	fmt.Println("Chemin Reçu:", filePath)
+	fmt.Println("Nom du Fichier Reçu:", fileName)
+	fmt.Println("Chemin Final:", fullPath)
 
 	// Vérifier que le fichier appartient bien à l'utilisateur
 	if !strings.HasPrefix(fullPath, basePath) {
@@ -46,13 +59,14 @@ func DownloadHandler(w http.ResponseWriter, r *http.Request) {
 	// Vérifier que le fichier existe
 	file, err := os.Open(fullPath)
 	if err != nil {
+		fmt.Println("Erreur: fichier introuvable", fullPath)
 		http.Error(w, "Fichier introuvable", http.StatusNotFound)
 		return
 	}
 	defer file.Close()
 
 	// Définir les en-têtes pour forcer le téléchargement
-	w.Header().Set("Content-Disposition", "attachment; filename="+filepath.Base(fullPath))
+	w.Header().Set("Content-Disposition", "attachment; filename="+fileName)
 	w.Header().Set("Content-Type", "application/octet-stream")
 
 	// Envoyer le fichier en réponse

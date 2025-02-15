@@ -12,7 +12,7 @@ import (
 
 // UploadHandler gère l'upload des fichiers
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
-    fmt.Println("🔹 Requête reçue pour upload")
+    fmt.Println("Requête reçue pour upload")
 
     // Vérification du token
     authHeader := r.Header.Get("Authorization")
@@ -45,7 +45,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
     if uploadPath == "" {
         uploadPath = "/"
     }
-    fmt.Println("📂 Chemin d'upload :", uploadPath)
+    fmt.Println("Chemin d'upload :", uploadPath)
 
     // Création du chemin complet
     basePath := fmt.Sprintf("uploads/%sUploads", username)
